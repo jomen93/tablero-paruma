@@ -66,20 +66,6 @@ children_list = [
             dbc.Alert(id="tbl_out")
             ]
         ),
-    html.Div(
-        className = "mat-card",
-        style={"display":"block", "margin":"15px"},
-        children = [html.H4("Distribución de la clase Objetivo")]),
-
-    html.Div(
-        className = "mat-card",
-        style={"display":"block", "margin":"15px"},
-        children = [html.H4("Transformación y limpieza de datos")]),
-
-    html.Div(
-        className = "mat-card",
-        style={"display":"block", "margin":"15px"},
-        children = [html.H4("Análisis estadístico")]),
             
     ]
 
