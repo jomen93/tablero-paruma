@@ -31,6 +31,10 @@ columns_show = ["ID", "FECHA", "DOLOR", "SATIF", "CATEG"]
 df = df.drop(df.index[2046], axis=0)
 df = df.drop(df.index[4195], axis=0)
 
+sentiment_path = "sentiment.csv"
+df_s = pd.read_csv(sentiment_path)
+df_s = df_s.drop_duplicates(subset="DOLOR")
+
 # Fechas para la tarjeta
 df["FECHA"] = pd.to_datetime(df["FECHA"]).dt.date
 date_min = str(pd.to_datetime(df["FECHA"].min()).date())
@@ -43,6 +47,7 @@ date_max = str(pd.to_datetime(df["FECHA"].max()).date())
 lengths = [len(df["DOLOR"].iloc[i]) for i in range(df["DOLOR"].shape[0])]
 
 layout = go.Layout(plot_bgcolor="rgba(0,0,0,0)", title="¿Qué tan largas son las opiniones?")
+
 fig = go.Figure(layout=layout)
 fig.add_trace(
     go.Histogram(x=lengths))
@@ -158,7 +163,7 @@ children_list = html.Div(children=[
             html.H4("Base de datos"),
             html.P("Columnas más importantes de la base"),
             dash_table.DataTable(
-                id = "cust-table2",
+                id = "cust-table1",
                 data=df[columns_show].to_dict("records"),
                 columns = [{"name":i, "id":i} for i in columns_show],
                 style_header={"background":"white", "fontWeight":"bold"},
@@ -180,6 +185,16 @@ children_list = html.Div(children=[
             style={"margin":"5px"}
             ),
         ]),
+
+    dbc.Row([
+        dbc.Col(
+            html.H4("Análisis de datos"), 
+            className="mat-card",
+            width=12,
+            style={"margin":"10px"}
+            ),
+        ]),
+
     dbc.Row([
         dbc.Col([html.Div([
             html.H4("Limpieza de datos"),
@@ -203,6 +218,67 @@ children_list = html.Div(children=[
             width=4,
             ),
         ]),
+    dbc.Row([
+        dbc.Col([
+            html.H4("Modelo de clasificación binario"),
+            html.P("""Como modelo inicial se tiene un modelo que clasifica opiniones positivas y negativas. 
+                    Para este respecto se ha construdio una red Neuronal con las siguientes caracteristicas"""),
+            html.Ul(children=[
+                html.Li("Item 1"),
+                html.Li("Item 2"),
+                html.Li("Item 3"),]
+                )],
+            className="mat-card",
+            width=12,
+            style={"margin":"10px"}
+            ),
+        ]),
+
+    dbc.Row([
+        dbc.Col([
+            html.H4("Predicción de clasificación Binaria"),
+            dash_table.DataTable(
+                id = "cust-table2",
+                data=df_s.to_dict("records"),
+                columns = [{"name":i, "id":i} for i in df_s.columns],
+                style_header={"background":"white", "fontWeight":"bold"},
+                style_table={"overFlowX":"auto"},
+                style_cell={
+                "fontFamily":"Open Sans",
+                "textAlign":"center",
+                "overflow":"hidden",
+                "textOverflow":"ellipsis",
+                "maxWidth":"180px"
+                },
+                page_size=11,
+                page_current=0,
+                page_action = "native"
+                ),
+            dbc.Alert(id="tbl_out2")
+            ],className="mat-card",
+            width=12,
+            style={"margin":"5px"}
+            ),
+        ]),
+
+    dbc.Row([
+        dbc.Col(
+            html.H4("Modelo de clasificación Opinion"), 
+            className="mat-card",
+            width=12,
+            style={"margin":"10px"}
+            ),
+        ]),
+
+    dbc.Row([
+        dbc.Col(
+            html.H4("Métricas"), 
+            className="mat-card",
+            width=12,
+            style={"margin":"10px"}
+            ),
+        ]),
+
     ])
 
 
@@ -213,9 +289,13 @@ app.layout = children_list
 # =============================================================================
 # Callbacks
 # =============================================================================
-@app.callback(Output("tbl_out", "children"), Input("cust-table2", "active_cell"))
+@app.callback(Output("tbl_out", "children"), Input("cust-table1", "active_cell"))
 def cell_clicked(active_cell):
     return df.iloc[active_cell["row"]][active_cell["column_id"]] if active_cell else "Consulte información con un click"
+
+@app.callback(Output("tbl_out2", "children"), Input("cust-table2", "active_cell"))
+def cell_clicked(active_cell):
+    return df_s.iloc[active_cell["row"]][active_cell["column_id"]] if active_cell else "Consulte información con un click"
 
 
 
@@ -223,7 +303,7 @@ if __name__ == "__main__":
     app.run_server(
         debug = True,
         host = "0.0.0.0",
-        port = os.getenv("PORT", 8500),
+        port = os.getenv("PORT", 8000),
         dev_tools_hot_reload=True
         )
 
